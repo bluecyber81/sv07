@@ -71,3 +71,15 @@ Dieses Repo soll genau drei Dinge zuverlässig leisten:
 ## Hinweis
 
 Diese Überarbeitung ändert **keine aggressiven Hardware-Tuning-Werte** absichtlich. Ziel ist zuerst Ordnung, Wartbarkeit und Robustheit.
+
+
+## Manueller Upload nach GitHub (ZIP)
+
+Wenn du nicht mit `git push` arbeitest, nutze den ZIP-Export:
+
+```bash
+bash scripts/create_github_upload_zip.sh
+```
+
+Danach findest du eine upload-fertige Datei unter `release/`.
+Details: `docs/MANUAL_GITHUB_UPLOAD.md`.

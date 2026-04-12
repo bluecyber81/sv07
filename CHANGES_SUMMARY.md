@@ -1,23 +1,17 @@
 # Änderungsübersicht
 
-## Repo-Struktur
-- README vollständig ersetzt
-- `.gitignore` erweitert
-- `archive/` als Ziel für Altstände vorgesehen
-- `cleanup_repo.sh` ergänzt
+## Stand 2026-04-12
 
-## Drucker-Konfiguration
-- `printer.cfg` formatiert und Makros bereinigt
-- `END_PRINT`, `START_PRINT`, `PAUSE`, `RESUME`, `CANCEL_PRINT` robuster gemacht
-- doppelte `beep`-Shell-Definition aus `printer.cfg` entfernt
+### Repository-Hygiene
+- `.gitignore` ergänzt, um Backups, `.deb`-Pakete und temporäre Dateien konsequent aus Git herauszuhalten.
+- Veraltete Dateien aus `printer_data/config/macro/` entfernt (`1macro_beep.sh`, `automoun.deb`, `plr-klipper.deb`).
 
-## PLR / Shell
-- `plr.cfg` auf reine PLR-Makros reduziert
-- doppelte Shell-Commands aus `plr.cfg` entfernt
-- `shell_command.cfg` als zentrale Stelle für Shell-Commands ausgebaut
+### Drucker-Makros / Hilfsskripte
+- `macro/macro_beep.sh` als einzige aktive Beep-Datei konsolidiert.
+- Eingabevalidierung im Beep-Skript verbessert:
+  - `BEEPCOUNT` wird auf `1..10` begrenzt.
+  - Ungültige Dauerwerte werden auf sichere Defaults zurückgesetzt.
+- Skript als ausführbar markiert (`chmod +x`).
 
-## Sonstiges
-- `moonraker.conf` formatiert, aber `channel: dev` unverändert gelassen
-- `crowsnest.conf` bereinigt, aktive Werte beibehalten
-- `macro/macro_beep.sh` robuster gemacht
-- `timelapse.cfg` unverändert übernommen
+## Ziel der Änderungen
+Fokus auf Wartbarkeit und reproduzierbare Git-Historie: nur relevante Live-Konfigurationen versionieren, Altlasten aus dem aktiven Pfad entfernen und Hilfsskripte robuster machen.

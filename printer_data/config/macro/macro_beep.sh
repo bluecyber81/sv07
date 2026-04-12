@@ -10,13 +10,24 @@ beep_count="${1:-3}"
 beep_duration="${2:-0.10}"
 pause_duration="${3:-0.50}"
 
-# Basic validation to avoid accidental garbage input from macros.
-case "$beep_count" in
-  ''|*[!0-9]*)
-    echo "Invalid beep count: $beep_count" >&2
-    exit 1
-    ;;
-esac
+is_number() {
+  [[ "$1" =~ ^[0-9]+([.][0-9]+)?$ ]]
+}
+
+if ! [[ "$beep_count" =~ ^[0-9]+$ ]]; then
+  beep_count=3
+fi
+
+if (( beep_count < 1 )); then beep_count=1; fi
+if (( beep_count > 10 )); then beep_count=10; fi
+
+if ! is_number "$beep_duration"; then
+  beep_duration="0.10"
+fi
+
+if ! is_number "$pause_duration"; then
+  pause_duration="0.50"
+fi
 
 if [[ ! -w "$GPIO_PATH" ]]; then
   echo "GPIO path not writable: $GPIO_PATH" >&2
