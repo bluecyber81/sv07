@@ -1,0 +1,29 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# Python / tooling caches
+__pycache__/
+*.pyc
+
+# Klipper / Moonraker generated or local state
+printer_data/config/*.csv
+printer_data/config/*.log
+printer_data/config/*.json
+printer_data/config/*~
+printer_data/config/.cache/
+
+# Backup bundles and snapshots (should not be versioned)
+printer_data/config/config-*.zip
+printer_data/config/*.deb
+printer_data/config/printer-[0-9]*_[0-9]*.cfg
+
+# Keep only canonical macro beep script
+printer_data/config/macro/1macro_beep.sh
+
+# Local export artifacts
+release/*.zip
