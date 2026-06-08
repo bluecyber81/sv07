@@ -1,8 +1,8 @@
-# sv07
+# SV07 Klipper Backup
 
-Sauber strukturierter Klipper-Backup-Stand für einen **Sovol SV07**.
+Sauber strukturierter Klipper-Backup-Stand für einen **Sovol SV07 / SV07 Plus** mit Klipad/MKS-Host.
 
-Das ursprüngliche Repository ist ein funktionaler Klipper-Backup-Dump. Diese überarbeitete Fassung macht den Stand leichter wartbar, besser dokumentiert und sicherer zu pflegen.
+Dieses Repository enthält den aktiven Klipper-Konfigurationsstand, Hilfsskripte und kurze Wartungsdokumentation. Ziel ist nicht, blind maximale Geschwindigkeit einzustellen, sondern einen stabilen, nachvollziehbaren und wiederherstellbaren Druckerstand zu behalten.
 
 ## Ziel
 
@@ -11,6 +11,25 @@ Dieses Repo soll genau drei Dinge zuverlässig leisten:
 1. den **aktiven Klipper-Stand** sichern,
 2. **Hilfsskripte und Makros** nachvollziehbar halten,
 3. **Altlasten und Backup-Müll** vom Live-Setup trennen.
+
+## Aktiver Einstiegspunkt
+
+Der wichtigste Einstiegspunkt ist:
+
+```text
+printer_data/config/printer.cfg
+```
+
+Dort werden aktuell unter anderem eingebunden:
+
+```text
+[include shell_command.cfg]
+[include mainsail.cfg]
+[include plr.cfg]
+[include timelapse.cfg]
+[include printer_additions/___module_loader.cfg]
+[include autotune_tmc.cfg]
+```
 
 ## Empfohlene Struktur
 
@@ -39,14 +58,16 @@ Dieses Repo soll genau drei Dinge zuverlässig leisten:
 - bewusst genutzte Includes wie `shell_command.cfg`, `plr.cfg`, `timelapse.cfg`
 - sauber benannte Hilfsskripte
 - dokumentierte Drittanbieter-Module in `printer_additions/`
+- kleine Doku-Dateien unter `docs/`
 
-## Was **nicht** im Live-Bereich liegen sollte
+## Was nicht in den Live-Bereich gehört
 
 - alte `printer-YYYYMMDD_*.cfg` Snapshots
 - `config-*.zip` Sicherungen
 - `.deb` Pakete
 - doppelte oder veraltete Shell-Skripte
-- temporäre Mess- und CSV-Dateien
+- temporäre Mess-, Log- und CSV-Dateien
+- generierte Resonanz- oder Kalibrierungsdateien
 
 ## Wartungsregeln
 
@@ -54,19 +75,26 @@ Dieses Repo soll genau drei Dinge zuverlässig leisten:
 - alte Config-Snapshots entweder löschen oder nach `archive/` verschieben
 - generierte Daten nicht erneut tracken
 - Änderungen an `printer.cfg` in logischen Blöcken kommentieren
+- Hardwarewerte nur ändern, wenn der Drucker danach gezielt getestet wird
 
-## Sichere Update-Reihenfolge
+## Nach Änderungen testen
 
-1. Dateien aus `sv07_improvements/` übernehmen
-2. Backup-Dateien aus dem aktiven Config-Ordner entfernen oder enttracken
-3. `chmod +x printer_data/config/macro/macro_beep.sh`
-4. Klipper `SAVE & RESTART`
-5. Testen:
-   - `BEEP`
-   - `START_PRINT`
-   - `PAUSE`
-   - `RESUME`
-   - `END_PRINT`
+Nach Änderungen an Makros oder Shell-Kommandos am Drucker testen:
+
+```text
+BEEP
+START_PRINT
+PAUSE
+RESUME
+END_PRINT
+update_git
+```
+
+Beim Beep-Skript außerdem sicherstellen:
+
+```bash
+chmod +x printer_data/config/macro/macro_beep.sh
+```
 
 ## Hinweis
 
