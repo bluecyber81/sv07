@@ -31,6 +31,11 @@ printer_data/config/printer-[0-9]*.cfg
 printer_data/config/printer-*.cfg
 printer_data/config/config-*.zip
 
+# Duplicate helper scripts from manual uploads
+printer_data/config/macro/1macro_beep.sh
+printer_data/config/macro-beep.sh
+printer_data/config/macro_beep.sh
+
 # Generated calibration/output files
 *.csv
 *.log
@@ -51,5 +56,8 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 
-# Keep the active printer config tracked
+# Keep active config and helpers tracked
 !printer_data/config/printer.cfg
+!printer_data/config/macro/macro_beep.sh
+!printer_data/config/plr.sh
+!printer_data/config/clear_plr.sh
