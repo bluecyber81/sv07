@@ -1,34 +1,23 @@
 # Aenderungen anwenden
 
-## Manueller GitHub-Upload
+Diese Datei beschreibt, wie der aktuelle GitHub-Stand sauber auf den Drucker uebernommen und getestet wird.
 
-Dieses Paket ist fuer den Upload in das Repo `bluecyber81/sv07` vorbereitet.
+## 1. Repo auf dem Drucker aktualisieren
 
-1. ZIP lokal entpacken.
-2. Auf GitHub `bluecyber81/sv07` oeffnen.
-3. `Add file` -> `Upload files`.
-4. Den Inhalt dieses Paketordners hochladen, nicht den Ordner als zusaetzliche Unterebene.
-5. Commit-Message zum Beispiel:
+Auf dem Klipad/MKS-Host im passenden Backup-/Config-Verzeichnis aktualisieren, je nachdem wie dein lokaler Git-Stand eingerichtet ist.
 
-```text
-Update SV07 Klipper config from 2026-06-08 backup
+Typischer Ablauf:
+
+```bash
+cd ~/printer_data/config
+git pull
 ```
 
-## Wichtig beim manuellen Upload
+Falls dein `klipper-backup`-Workflow die Dateien anders synchronisiert, nutze deinen gewohnten Sync-Weg und pruefe danach die Dateien in `~/printer_data/config`.
 
-GitHub ersetzt Dateien, loescht aber alte Dateien nicht automatisch. Wenn du alte Dateien entfernen willst, loesche sie direkt im GitHub-Webinterface.
+## 2. Shell-Skripte ausfuehrbar machen
 
-Empfohlen zu loeschen, falls noch vorhanden und nicht mehr bewusst genutzt:
-
-```text
-printer_data/config/alt autotune_tmc.cfg
-printer_data/config/*.log
-printer_data/config/macro/*.deb
-```
-
-## Danach auf dem Drucker
-
-Nach dem Sync/Upload auf den Drucker:
+GitHub-Web-Uploads erhalten Ausfuehrungsrechte nicht immer sauber. Deshalb einmal ausfuehren:
 
 ```bash
 chmod +x ~/printer_data/config/clear_plr.sh
@@ -36,15 +25,61 @@ chmod +x ~/printer_data/config/plr.sh
 chmod +x ~/printer_data/config/macro/macro_beep.sh
 ```
 
-Dann Klipper/Firmware neu starten und testen:
+## 3. Nicht benoetigte Doppeldateien entfernen
+
+Im aktiven Config-Ordner sollte es nur eine Beep-Datei geben:
+
+```text
+~/printer_data/config/macro/macro_beep.sh
+```
+
+Falls lokal noch vorhanden, entfernen:
+
+```bash
+rm -f ~/printer_data/config/macro/1macro_beep.sh
+rm -f ~/printer_data/config/macro-beep.sh
+rm -f ~/printer_data/config/macro_beep.sh
+```
+
+## 4. Klipper neu starten
+
+In Mainsail/Klipper:
+
+```text
+FIRMWARE_RESTART
+```
+
+oder ueber die Weboberflaeche neu starten.
+
+## 5. Funktionstest
+
+Nach dem Neustart testen:
 
 ```text
 BEEP
+BEEP BC=1 BD=0.1 PD=0.2
 G31
-START_PRINT
+SFS_ENABLE
+SFS_DISABLE
 PAUSE
 RESUME
 END_PRINT
 ```
 
-PLR-Resume nur testen, wenn die gespeicherte Datei und Z-Hoehe wirklich plausibel sind.
+`START_PRINT` nur mit Slicer-/Testdatei ausfuehren, nicht leer in der Konsole.
+
+## 6. PLR-Hinweis
+
+`RESUME_INTERRUPTED` ist nur fuer Power-Loss-Resume gedacht. Nicht als normales Resume verwenden.
+
+Vor einem PLR-Test in `saved_variables.cfg` pruefen:
+
+```text
+last_file
+filepath
+power_resume_z
+was_interrupted
+print_is_running_f
+```
+
+Nur fortsetzen, wenn Datei und Z-Hoehe plausibel sind.
