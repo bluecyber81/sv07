@@ -1,55 +1,45 @@
-# Repo-Review für `bluecyber81/sv07`
+# Repo-Analyse fuer `bluecyber81/sv07`
 
-## Was aktuell gut ist
+Stand der Analyse: 2026-06-11
 
-- Live-Konfiguration liegt grundsätzlich im erwarteten `printer_data/config/`-Pfad.
-- `printer.cfg` bindet Zusatzdateien wie `shell_command.cfg`, `plr.cfg` und `timelapse.cfg` bereits ein.
-- Drittanbieter-Module in `printer_additions/` sind separat abgelegt.
+## Ergebnis
 
-## Hauptprobleme
+Das GitHub-Repo `bluecyber81/sv07` ist das passende Ziel fuer die neue `config-20260608.zip`. Das Repo ist bereits deutlich sauberer als ein roher Druckerexport: Es enthaelt README, `.gitignore`, Doku und keine grossen Logdateien.
 
-### 1) Live-Config und Archiv sind vermischt
-Im aktiven Konfigurationsordner liegen gleichzeitig:
-- mehrere `printer-*.cfg`
-- mehrere `config-*.zip`
-- `.deb`-Pakete
-- alternative / alte Printer-Dateien
-- doppelte Beep-Skripte
+## Gute Punkte
 
-Das macht Fehleranalyse, Restore und Review unnötig schwer.
+- Repo-Struktur liegt im erwarteten Pfad `printer_data/config/`.
+- `printer.cfg` ist der klare Einstiegspunkt.
+- KPA-Module sind unter `printer_additions/` getrennt.
+- `.gitignore` filtert ZIPs, Logs, `.deb`-Pakete und Runtime-Daten.
+- Das letzte GitHub-Commit war `401715e Improve README for current SV07 config state`.
 
-### 2) README erklärt das Repo praktisch nicht
-Das Standard-`klipper-backup`-README ist zu knapp für einen echten Wartungsstand.
+## Neue ZIP gegen GitHub
 
-### 3) `.gitignore` ist zu knapp
-Zwar werden einige Dateitypen ignoriert, aber nur zukünftig. Bereits getrackte Backup-Dateien bleiben trotzdem im Repo.
+Die neue ZIP bringt relevante neue Dateien mit:
 
-### 4) Hilfsskripte sind nicht sauber vereinheitlicht
-Insbesondere beim Beeper gibt es mehrere Dateinamen und Pfade. Das sollte auf genau **eine** Datei reduziert werden.
+- `printer_data/config/plr.sh`
+- `printer_data/config/clear_plr.sh`
+- `printer_data/config/printer_additions/kpa_leds_sv07plus_module.cfg`
 
-### 5) `printer.cfg` ist funktional, aber schwer wartbar
-Die Datei mischt:
-- Druck-Makros
-- Sensorik
-- Stepper / Heizer
-- Bett-Leveling
-- externe Module
-- SAVE_CONFIG-Block
+Die ZIP enthielt ausserdem Dateien, die nicht auf GitHub gehoeren und deshalb im bereinigten Paket fehlen:
 
-Das ist für den Drucker okay, aber für Git-Pflege unübersichtlich.
+- `crowsnest.log`
+- `klippy.log`
+- `moonraker (4).log`
+- `.deb`-Pakete im `macro/`-Ordner
 
-## Empfohlene nächste Schritte
+## Technische Befunde
 
-1. Nur die aktive Config im Live-Pfad behalten.
-2. Alte Snapshots nach `archive/` verschieben oder aus Git entfernen.
-3. `.deb` und ZIPs aus dem Repo enttracken.
-4. README und `.gitignore` ersetzen.
-5. `shell_command.cfg` und `macro_beep.sh` vereinheitlichen.
-6. Danach optional `printer.cfg` modularisieren.
+- Die aktive Include-Kette ab `printer.cfg` wurde geprueft: keine fehlenden Includes.
+- Die Logs zeigen zuletzt `Klippy ready`, also keine offensichtliche Startblockade im Export.
+- `moonraker (4).log` enthaelt lokale IPs und Systemdetails; gut, dass Logs nicht hochgeladen werden.
+- `crowsnest.log` enthaelt historische Kamera-Fehler wie `No usable Devices Found`; das ist ein Betriebslog, kein Repo-Inhalt.
+- Die neue ZIP verweist in `shell_command.cfg` urspruenglich auf `/home/mks/plr.sh` und `/home/mks/clear_plr.sh`. Im bereinigten Paket wurden diese Pfade auf `~/printer_data/config/` korrigiert, weil die Skripte dort mitgeliefert werden.
 
-## Optionaler zweiter Schritt
+## Empfehlungen
 
-Wenn die Aufräumrunde stabil läuft, dann im nächsten Commit:
-- Makros in eigene Include-Dateien auslagern
-- Motion / Heater / Sensors logisch trennen
-- generierte SAVE_CONFIG-Daten bewusst unten isolieren
+- Dieses Paket als neuen GitHub-Stand verwenden.
+- Falls `alt autotune_tmc.cfg` im bestehenden GitHub-Repo nicht mehr gebraucht wird, in GitHub manuell loeschen.
+- Nach dem Upload am Drucker `chmod +x` fuer `plr.sh`, `clear_plr.sh` und `macro_beep.sh` ausfuehren.
+- Danach Firmware neu starten und die Testliste aus `README.md` durchgehen.

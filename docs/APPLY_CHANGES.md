@@ -1,52 +1,50 @@
-# Änderungen anwenden
+# Aenderungen anwenden
 
-## 1. Dateien ersetzen
-Diese Dateien aus diesem Paket in dein Repo kopieren:
+## Manueller GitHub-Upload
 
-- `README.md`
-- `.gitignore`
-- `printer_data/config/shell_command.cfg`
-- `printer_data/config/macro/macro_beep.sh`
+Dieses Paket ist fuer den Upload in das Repo `bluecyber81/sv07` vorbereitet.
 
-## 2. Bereits getrackte Backup-Dateien aus Git entfernen
-Nur `.gitignore` reicht nicht, wenn die Dateien schon im Repo liegen.
+1. ZIP lokal entpacken.
+2. Auf GitHub `bluecyber81/sv07` oeffnen.
+3. `Add file` -> `Upload files`.
+4. Den Inhalt dieses Paketordners hochladen, nicht den Ordner als zusaetzliche Unterebene.
+5. Commit-Message zum Beispiel:
 
-Beispiel:
-
-```bash
-git rm --cached printer_data/config/config-*.zip
-git rm --cached printer_data/config/*.deb
-git rm --cached printer_data/config/printer-[0-9]*_[0-9]*.cfg
+```text
+Update SV07 Klipper config from 2026-06-08 backup
 ```
 
-Falls du alte Stände behalten willst, verschiebe sie vorher lokal in einen Archiv-Ordner.
+## Wichtig beim manuellen Upload
 
-## 3. Doppelte Dateien bereinigen
-Empfohlen:
+GitHub ersetzt Dateien, loescht aber alte Dateien nicht automatisch. Wenn du alte Dateien entfernen willst, loesche sie direkt im GitHub-Webinterface.
 
-- `printer_data/config/macro_beep.sh` entfernen, falls ungenutzt
-- `printer_data/config/macro-beep.sh` entfernen, falls ungenutzt
-- nur `printer_data/config/macro/macro_beep.sh` behalten
+Empfohlen zu loeschen, falls noch vorhanden und nicht mehr bewusst genutzt:
 
-## 4. Shell-Skript ausführbar machen
-
-```bash
-chmod +x printer_data/config/macro/macro_beep.sh
+```text
+printer_data/config/alt autotune_tmc.cfg
+printer_data/config/*.log
+printer_data/config/macro/*.deb
 ```
 
-## 5. Commit
+## Danach auf dem Drucker
+
+Nach dem Sync/Upload auf den Drucker:
 
 ```bash
-git add .
-git commit -m "Clean up sv07 repo structure and helper scripts"
-git push
+chmod +x ~/printer_data/config/clear_plr.sh
+chmod +x ~/printer_data/config/plr.sh
+chmod +x ~/printer_data/config/macro/macro_beep.sh
 ```
 
-## 6. Danach am Drucker testen
+Dann Klipper/Firmware neu starten und testen:
 
-- `BEEP`
-- `START_PRINT`
-- `PAUSE`
-- `RESUME`
-- `END_PRINT`
-- `update_git`
+```text
+BEEP
+G31
+START_PRINT
+PAUSE
+RESUME
+END_PRINT
+```
+
+PLR-Resume nur testen, wenn die gespeicherte Datei und Z-Hoehe wirklich plausibel sind.

@@ -1,101 +1,97 @@
 # SV07 Klipper Backup
 
-Sauber strukturierter Klipper-Backup-Stand für einen **Sovol SV07 / SV07 Plus** mit Klipad/MKS-Host.
+Aktueller, GitHub-bereinigter Klipper-Backup-Stand fuer einen **Sovol SV07 / SV07 Plus** mit Klipad/MKS-Host.
 
-Dieses Repository enthält den aktiven Klipper-Konfigurationsstand, Hilfsskripte und kurze Wartungsdokumentation. Ziel ist nicht, blind maximale Geschwindigkeit einzustellen, sondern einen stabilen, nachvollziehbaren und wiederherstellbaren Druckerstand zu behalten.
+Dieses Repo soll den funktionierenden Druckerstand nachvollziehbar sichern, ohne Logdateien, Installer-Pakete oder alte Export-ZIPs mitzuschleppen.
 
-## Ziel
+## Aktueller Stand
 
-Dieses Repo soll genau drei Dinge zuverlässig leisten:
+- Quelle: `config-20260608.zip`
+- Ziel-Repo: `bluecyber81/sv07`
+- Hauptkonfiguration: `printer_data/config/printer.cfg`
+- Bereinigt fuer GitHub: Logs und `.deb`-Pakete sind nicht enthalten.
 
-1. den **aktiven Klipper-Stand** sichern,
-2. **Hilfsskripte und Makros** nachvollziehbar halten,
-3. **Altlasten und Backup-Müll** vom Live-Setup trennen.
+## Aktive Includes
 
-## Aktiver Einstiegspunkt
-
-Der wichtigste Einstiegspunkt ist:
-
-```text
-printer_data/config/printer.cfg
-```
-
-Dort werden aktuell unter anderem eingebunden:
+`printer.cfg` bindet aktuell diese Dateien ein:
 
 ```text
 [include shell_command.cfg]
-[include mainsail.cfg]
 [include plr.cfg]
 [include timelapse.cfg]
 [include printer_additions/___module_loader.cfg]
 [include autotune_tmc.cfg]
+[include printer_additions/kpa_leds_sv07plus_module.cfg]
 ```
 
-## Empfohlene Struktur
+Die Include-Kette wurde gegen die Dateien im Repo geprueft. Es fehlen keine aktiven Includes.
+
+## Struktur
 
 ```text
 .
-├── README.md
-├── .gitignore
-├── docs/
-│   ├── APPLY_CHANGES.md
-│   └── REPO_REVIEW.md
-└── printer_data/
-    └── config/
-        ├── printer.cfg
-        ├── shell_command.cfg
-        ├── plr.cfg
-        ├── timelapse.cfg
-        ├── saved_variables.cfg
-        ├── macro/
-        │   └── macro_beep.sh
-        └── printer_additions/
+|-- README.md
+|-- .gitignore
+|-- .gitattributes
+|-- docs/
+|   |-- APPLY_CHANGES.md
+|   `-- REPO_REVIEW.md
+`-- printer_data/
+    `-- config/
+        |-- printer.cfg
+        |-- moonraker.conf
+        |-- crowsnest.conf
+        |-- shell_command.cfg
+        |-- plr.cfg
+        |-- plr.sh
+        |-- clear_plr.sh
+        |-- timelapse.cfg
+        |-- saved_variables.cfg
+        |-- macro/
+        |   |-- macro_beep.sh
+        |   `-- 1macro_beep.sh
+        `-- printer_additions/
 ```
 
-## Was im Repo bleiben sollte
+## PLR / Power-Loss-Resume
 
-- `printer.cfg` als aktiver Einstiegspunkt
-- bewusst genutzte Includes wie `shell_command.cfg`, `plr.cfg`, `timelapse.cfg`
-- sauber benannte Hilfsskripte
-- dokumentierte Drittanbieter-Module in `printer_additions/`
-- kleine Doku-Dateien unter `docs/`
+Die PLR-Makros liegen in `plr.cfg`. Die zugehoerigen Shell-Skripte liegen im Config-Ordner und werden von `shell_command.cfg` so aufgerufen:
 
-## Was nicht in den Live-Bereich gehört
+```text
+/home/mks/printer_data/config/clear_plr.sh
+/home/mks/printer_data/config/plr.sh
+```
 
-- alte `printer-YYYYMMDD_*.cfg` Snapshots
-- `config-*.zip` Sicherungen
-- `.deb` Pakete
-- doppelte oder veraltete Shell-Skripte
-- temporäre Mess-, Log- und CSV-Dateien
-- generierte Resonanz- oder Kalibrierungsdateien
+Nach dem Upload auf den Drucker muessen die Shell-Skripte ausfuehrbar sein:
 
-## Wartungsregeln
+```bash
+chmod +x ~/printer_data/config/clear_plr.sh
+chmod +x ~/printer_data/config/plr.sh
+chmod +x ~/printer_data/config/macro/macro_beep.sh
+```
 
-- Nur **eine** aktive Beep-Datei verwenden: `printer_data/config/macro/macro_beep.sh`
-- alte Config-Snapshots entweder löschen oder nach `archive/` verschieben
-- generierte Daten nicht erneut tracken
-- Änderungen an `printer.cfg` in logischen Blöcken kommentieren
-- Hardwarewerte nur ändern, wenn der Drucker danach gezielt getestet wird
+## Was bewusst nicht ins Repo gehoert
 
-## Nach Änderungen testen
+- `*.log`
+- `*.deb`
+- `config-*.zip`
+- alte `printer-*.cfg` Snapshots
+- G-Code-Dateien aus `printer_data/gcodes/`
+- lokale Datenbanken, Zertifikate und Runtime-Sockets
 
-Nach Änderungen an Makros oder Shell-Kommandos am Drucker testen:
+## Nach Aenderungen testen
+
+Nach dem Upload und einem Firmware Restart am Drucker pruefen:
 
 ```text
 BEEP
+G31
 START_PRINT
 PAUSE
 RESUME
 END_PRINT
-update_git
+SFS_ENABLE
+SFS_DISABLE
 ```
 
-Beim Beep-Skript außerdem sicherstellen:
-
-```bash
-chmod +x printer_data/config/macro/macro_beep.sh
-```
-
-## Hinweis
-
-Diese Überarbeitung ändert **keine aggressiven Hardware-Tuning-Werte** absichtlich. Ziel ist zuerst Ordnung, Wartbarkeit und Robustheit.
+Bei PLR nur testen, wenn `last_file` und `power_resume_z` plausibel gesetzt sind.
