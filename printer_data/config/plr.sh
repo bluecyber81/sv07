@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 CFG="/home/mks/printer_data/config/saved_variables.cfg"
@@ -10,25 +10,54 @@ decode_var() {
   printf '%b' "$1"
 }
 
-filepath_raw=$(sed -n "s/.*filepath *= *'\([^']*\)'.*/\1/p" "$CFG" | head -n1)
-last_file_raw=$(sed -n "s/.*last_file *= *'\([^']*\)'.*/\1/p" "$CFG" | head -n1)
-height=$(sed -n "s/.*power_resume_z *= *\([^[:space:]]*\).*/\1/p" "$CFG" | head -n1)
+is_number() {
+  [[ "$1" =~ ^-?[0-9]+([.][0-9]+)?$ ]]
+}
 
-filepath=$(decode_var "${filepath_raw:-}")
-last_file=$(decode_var "${last_file_raw:-}")
-
-if [ -z "$filepath" ] || [ -z "$last_file" ]; then
-  echo "PLR: filepath oder last_file fehlt in saved_variables.cfg" >&2
+if [[ ! -f "$CFG" ]]; then
+  echo "PLR: saved_variables.cfg nicht gefunden: $CFG" >&2
   exit 1
 fi
 
-if [ ! -f "$filepath" ]; then
+filepath_raw=$(sed -n "s/.*filepath *= *'\([^']*\)'.*/\1/p" "$CFG" | head -n1)
+last_file_raw=$(sed -n "s/.*last_file *= *'\([^']*\)'.*/\1/p" "$CFG" | head -n1)
+saved_height=$(sed -n "s/.*power_resume_z *= *\([^[:space:]]*\).*/\1/p" "$CFG" | head -n1)
+
+filepath=$(decode_var "${filepath_raw:-}")
+last_file=$(decode_var "${2:-${last_file_raw:-}}")
+height="${1:-${saved_height:-}}"
+
+if [[ -z "$filepath" ]]; then
+  echo "PLR: filepath fehlt in saved_variables.cfg" >&2
+  exit 1
+fi
+
+if [[ -z "$last_file" ]]; then
+  echo "PLR: last_file fehlt in saved_variables.cfg oder Parameter 2" >&2
+  exit 1
+fi
+
+# RUN_SHELL_COMMAND kann last_file mit Anfuehrungszeichen uebergeben.
+last_file="${last_file%\"}"
+last_file="${last_file#\"}"
+
+if [[ "$last_file" == */* ]]; then
+  echo "PLR: last_file darf kein Pfad sein: $last_file" >&2
+  exit 1
+fi
+
+if [[ ! -f "$filepath" ]]; then
   echo "PLR: Originaldatei nicht gefunden: $filepath" >&2
   exit 1
 fi
 
-if [ -z "${height:-}" ]; then
-  echo "PLR: power_resume_z fehlt in saved_variables.cfg" >&2
+if [[ -z "$height" ]]; then
+  echo "PLR: power_resume_z fehlt in saved_variables.cfg oder Parameter 1" >&2
+  exit 1
+fi
+
+if ! is_number "$height"; then
+  echo "PLR: ungueltige Z-Hoehe: $height" >&2
   exit 1
 fi
 
@@ -43,7 +72,7 @@ dst = Path(sys.argv[3])
 
 lines = src.read_text(errors="ignore").splitlines()
 
-# Thumbnailblock entfernen
+# Thumbnailblock entfernen, damit die Resume-Datei kleiner und sauberer bleibt.
 clean = []
 skip = False
 for line in lines:
@@ -88,8 +117,8 @@ last_m109 = None
 last_m140 = None
 last_m190 = None
 last_m106 = None
-last_coord_mode = None   # G90 / G91
-last_extruder_mode = None  # M82 / M83
+last_coord_mode = None
+last_extruder_mode = None
 
 for idx, ln in enumerate(clean):
     stripped = ln.strip()
@@ -127,9 +156,9 @@ for idx, ln in enumerate(clean):
             break
 
 if resume_idx is None or resume_z is None:
-    raise SystemExit(f"PLR: Kein passender Resume-Punkt für Z >= {target} gefunden.")
+    raise SystemExit(f"PLR: Kein passender Resume-Punkt fuer Z >= {target} gefunden.")
 
-# Fallback für E nur falls nötig
+# Fallback fuer E nur falls noetig.
 if last_e is None:
     for ln in clean[resume_idx:]:
         e_match = e_re.search(ln)
@@ -137,7 +166,7 @@ if last_e is None:
             last_e = e_match.group(1)
             break
 
-# Temperatur-Fallbacks aus Dateikommentaren, falls keine M104/M109/M140/M190 im G-Code vorhanden sind
+# Temperatur-Fallbacks aus Dateikommentaren, falls keine M104/M109/M140/M190 im G-Code vorhanden sind.
 if last_m140 is None and bed_temp_fallback is not None:
     last_m140 = f"M140 S{bed_temp_fallback}"
 if last_m190 is None and bed_temp_fallback is not None:
@@ -154,7 +183,7 @@ out.extend(meta)
 out.append(gen_line)
 out.append(f"SET_KINEMATIC_POSITION Z={resume_z}")
 
-# Nur bei absoluter Extrusion nötig/sinnvoll
+# Nur bei absoluter Extrusion noetig/sinnvoll.
 if last_e is not None and last_extruder_mode != "M83":
     out.append(f"G92 E{last_e}")
 
